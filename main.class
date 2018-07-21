@@ -1,0 +1,227 @@
+package de.AI;
+import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
+
+public class Main {
+    private static void printDna(int[] dna) {
+        for (int i = 0; i < dna.length; i++) {
+            System.out.print(dna[i] + " ");
+        }
+        System.out.println("\t");
+    }
+
+    public static void main(String[] args) {
+        System.out.print("Start programm.......\n\n");
+        int[] dnaToMatch = new int[9];
+
+        int[] dna1 = new int[9];
+        int[] dna2 = new int[9];
+        int[] dnaNext = new int[9];
+
+        dna1 = fillDna(dna1);
+        dna2 = fillDna(dna2);
+
+        printDna(dna1);
+        printDna(dna2);
+        System.out.print("\n");
+
+        dna1 = ridOffDuplicates(dna1);
+        dna2 = ridOffDuplicates(dna2);
+
+        printDna(dna1);
+        printDna(dna2);
+        System.out.print("\n");
+        System.exit(0);
+
+        dnaToMatch = fillDna(dnaToMatch);
+        dnaToMatch = ridOffDuplicates(dnaToMatch);
+
+        for (int i = 0; i < dna1.length; i++) {
+            System.out.print(dna1[i] + " ");
+        }
+        System.out.println("\t");
+        for (int i = 0; i < dna2.length; i++) {
+            System.out.print(dna2[i] + " ");
+        }
+        System.out.println("\t");
+        System.exit(0);
+        int[] dna1part = new int[5];
+        int[] dna2part = new int[5];
+        for (int i = 0; i < dna1.length / 2; i++) {
+            dna1part[i] = dna1[i];
+            for (int j = dna1.length / 2; j < dna2.length; j++) {
+                dna2part[i] = dna2[j];
+            }
+        }
+        boolean nextDna = false;
+        for (int i = 0; i < dnaNext.length; i++) {
+            if (!nextDna) {
+                if (i != dna1part.length) {
+                    dnaNext[i] = dna1part[i];
+                } else {
+                    nextDna = true;
+                }
+            }
+            if (nextDna) {
+                for (int j = i; 0 < dna2part.length; j++) {
+                    dnaNext[i] = dna2part[j];
+                }
+            }
+        }
+
+        for (int i = 0; i < dnaNext.length; i++) {
+            System.out.print(dnaNext[i] + " ");
+        }
+
+
+        System.out.print("\n\nEnd programm.......");
+
+
+    }
+
+    private static int[] fillDna(int[] dna) {
+        for (int i = 0; i < dna.length; i++) {
+            dna[i] = randomInt(1, 9);
+        }
+        return dna;
+    }
+
+    private static int getDistinctNumberArray(int[] dna) {
+        //if dna is duplicated
+        int[] dnaDistinct = Arrays.copyOf(dna, dna.length);
+        // generate random num
+        int randInt = randomInt(1, 9);
+        // check if random num is in dna
+        for (int i = 0; i < dna.length; i++) {
+            if (dna[i] == randInt) {
+                getDistinctNumberArray(dna);
+            }
+        }
+
+        return randInt;
+    }
+
+    private static int[] ridOffDuplicates(int[] dna) {
+        int temp = 0;
+        boolean found = false;
+        int[] dnaDistinct = Arrays.copyOf(dna, dna.length);
+        int[] duplicatedNumbers = new int[1];
+        int[] duplicatedNumbersIndex = new int[1];
+        // Hier bei diesen Loop beginnt die überprüfung von doppelt vorhandenen Zahlen
+        for(int i = 0; i < dna.length; i++) {
+            int count = 0;
+            int lastCount = 0;
+            for(int j = 0; j < dna.length; j++) {
+                // sobald eine Zahl gefunden wird, wird auch der count um 1 hochgezählt
+                if(dna[j] == dnaDistinct[i]) {
+                    lastCount = count;
+                    count++;
+                }
+                // Sobald eine Zahl öfter als 1 mal vorhanden ist also counter > 1
+                // und lastCount steht hier für den vorherigen zählschritt falls eine Zahl öfter als 2 mal
+                // vorkommt vllt sogar 3 mal etc so wird verhindert das sie mehrmals eingetragen wird als nötig
+                if(count != 1 && count != lastCount) {
+                    if(duplicatedNumbers[0] == 0) {
+                        // hier wird die erste doppelte zahl hinzugefügt
+                        duplicatedNumbers[0] = dna[j];
+                        duplicatedNumbersIndex[0] = j;
+                    } else {
+                        // hier wird natürlich der Array erstmal erweitert um die neue
+                        // doppelte Zahl hinzuzufügen die orginalen doppelten Zahlen
+                        duplicatedNumbers = Arrays.copyOf(duplicatedNumbers, duplicatedNumbers.length + 1);
+                        duplicatedNumbers[duplicatedNumbers.length - 1] = dna[j];
+                        // hier wird ebenfalls in einem Array was gespeichert
+                        // und zwar wird hier der index der doppelten Zahlen in einem Array festgehalten
+                        // um später den original DNA Array an diesen stellen von doppelten Zahlen zu befreien.
+                        duplicatedNumbersIndex = Arrays.copyOf(duplicatedNumbersIndex, duplicatedNumbersIndex.length + 1);
+                        duplicatedNumbers[duplicatedNumbersIndex.length - 1] = j  ;
+                    }
+                    // hier wird die zuletzt gezählte Anzahl der Zahl vorkommend im Array zugewiesen
+                    lastCount = count;
+                }
+            }
+        }
+
+        // set length of randInt same as duplicated Numbers in DNA exists
+        int[] randInt = new int[duplicatedNumbersIndex.length];
+
+        // get new distinct numbers for duplicated numbers
+        for(int i = 0; i < randInt.length; i++) {
+            randInt[i] = getDistinctNumberArray(dna);
+        }
+
+        if(duplicatedNumbersIndex.length == randInt.length) {
+            System.out.print("True");
+        }
+        // replace duplicated numbers
+        for(int i = 0; i < duplicatedNumbersIndex.length; i++) {
+            dna[duplicatedNumbersIndex[i]] = randInt[i];
+        }
+
+        System.out.println("/nDuplicated numbers: ");
+        printDna(duplicatedNumbers);
+        System.out.println("/nDuplicated numbers index: ");
+        printDna(duplicatedNumbersIndex);
+        System.out.println("/nRandom Integers for duplicated Numbers:");
+        printDna(randInt);
+        System.out.println("/n ");
+
+
+        return dna;
+    }
+
+    private static int[] distinctNumber(int[] dna, int[] dupNums, int[] dupNumsIndex) {
+        int[] dupOfOrgDna = Arrays.copyOf(dna, dna.length);
+        for (int i = 0; i < dupOfOrgDna.length; i++) {
+            for (int j = 0; j < dupNums.length; j++) {
+                if (dupOfOrgDna[i] == dupNums[j]) {
+                    dupOfOrgDna[i] = 0;
+                }
+            }
+        }
+        for (int i = 0; i < dupNums.length; i++) {
+            boolean isAlreadyPersistent = true;
+            boolean isPersistent = true;
+            int randInt;
+
+            do {
+                randInt = randomInt(1, 9);
+                isAlreadyPersistent = isNumberDuplicate(dupNums,randInt, dupNums.length);
+                isPersistent = isNumberDuplicate(dupOfOrgDna, randInt, dupOfOrgDna.length);
+            } while(isAlreadyPersistent || isPersistent);
+
+            dna[dupNumsIndex[i]] = randInt;
+
+        }
+        return dna;
+    }
+
+    /*private static int[] distinctNumber(int[] dna) {
+        int temp = 0;
+        boolean found = false;
+        for(int i = 0; i < dna.length; i++) {
+            if(dna[i] == temp) {
+                do {
+                  temp = randomInt(1, 9);
+                  dna[i] = temp;
+                } while(dna[i] == numberToFind);
+            }
+        }
+        return dna;
+    }*/
+
+    private static boolean isNumberDuplicate(int[] dna, int numberToFind, int index) {
+        for(int i = 0; i < index; i++) {
+            if(dna[i] == numberToFind) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static int randomInt(int min, int max) {
+        int randomNum = ThreadLocalRandom.current().nextInt(min, max + 1);
+        return randomNum;
+    }
+}
+
